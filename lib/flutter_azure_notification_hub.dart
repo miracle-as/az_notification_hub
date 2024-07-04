@@ -1,8 +1,11 @@
-
 import 'flutter_azure_notification_hub_platform_interface.dart';
 
 class FlutterAzureNotificationHub {
-  Future<String?> getPlatformVersion() {
-    return FlutterAzureNotificationHubPlatform.instance.getPlatformVersion();
+  static final _instance = FlutterAzureNotificationHub();
+
+  static get instance => _instance;
+
+  Future<void> start() {
+    return FlutterAzureNotificationHubPlatform.instance.start();
   }
 }

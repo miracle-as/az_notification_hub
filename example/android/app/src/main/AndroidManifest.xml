@@ -30,6 +30,12 @@
         <meta-data
             android:name="flutterEmbedding"
             android:value="2" />
+        <meta-data
+            android:name="NotificationHubName"
+            android:value="azurenotificationhubdemo" />
+        <meta-data
+            android:name="NotificationHubConnectionString"
+            android:value="Endpoint=sb://AzureNotificationHubDemo.servicebus.windows.net/;SharedAccessKeyName=DefaultListenSharedAccessSignature;SharedAccessKey=nuTWA4J8xoP5AK+nx8K/F+a0tEwb+ovp5AacM9ca5fI=" />
     </application>
     <!-- Required to query activities that can process text, see:
          https://developer.android.com/training/package-visibility and

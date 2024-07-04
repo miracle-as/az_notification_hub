@@ -23,7 +23,7 @@ abstract class FlutterAzureNotificationHubPlatform extends PlatformInterface {
     _instance = instance;
   }
 
-  Future<String?> getPlatformVersion() {
+  Future<void> start() {
     throw UnimplementedError('platformVersion() has not been implemented.');
   }
 }

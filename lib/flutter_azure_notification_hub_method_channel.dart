@@ -10,8 +10,7 @@ class MethodChannelFlutterAzureNotificationHub extends FlutterAzureNotificationH
   final methodChannel = const MethodChannel('flutter_azure_notification_hub');
 
   @override
-  Future<String?> getPlatformVersion() async {
-    final version = await methodChannel.invokeMethod<String>('getPlatformVersion');
-    return version;
+  Future<void> start() {
+    return methodChannel.invokeMethod<void>('start');
   }
 }
