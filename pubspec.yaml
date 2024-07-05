@@ -1,16 +1,17 @@
-name: flutter_azure_notification_hub
+name: azure_notification_hub
 description: "A new Flutter plugin project."
 version: 0.0.1
 homepage:
 
 environment:
-  sdk: '>=3.4.3 <4.0.0'
-  flutter: '>=3.3.0'
+  sdk: ">=3.4.3 <4.0.0"
+  flutter: ">=3.3.0"
 
 dependencies:
   flutter:
     sdk: flutter
   plugin_platform_interface: ^2.0.2
+  permission_handler: any
 
 dev_dependencies:
   flutter_test:
@@ -35,10 +36,10 @@ flutter:
   plugin:
     platforms:
       android:
-        package: com.tangrainc.flutter_azure_notification_hub
-        pluginClass: FlutterAzureNotificationHubPlugin
+        package: com.tangrainc.azure_notification_hub
+        pluginClass: AzureNotificationHubPlugin
       ios:
-        pluginClass: FlutterAzureNotificationHubPlugin
+        pluginClass: AzureNotificationHubPlugin
 
   # To add assets to your plugin package, add an assets section, like this:
   # assets:

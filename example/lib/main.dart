@@ -1,17 +1,46 @@
-import 'package:firebase_core/firebase_core.dart';
-// import 'package:firebase_messaging/firebase_messaging.dart';
+import 'dart:async';
+import 'dart:convert';
+
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_azure_notification_hub/flutter_azure_notification_hub.dart';
-import 'package:flutter_azure_notification_hub_example/firebase_options.dart';
+import 'package:azure_notification_hub/azure_notification_hub.dart';
+
+final _platformTemplates = {
+  TargetPlatform.android.name: {
+    'message': {
+      'notification': {
+        'title': '\$(title)',
+        'body': '\$(body)',
+      },
+      'data': {
+        'title': '\$(title)',
+        'body': '\$(body)',
+      },
+    },
+  },
+  // 'ios': {
+  //   'aps': {
+  //     'alert': {
+  //       'title': 'title',
+  //       'body': 'body',
+  //     },
+  //   },
+};
+
+Future<void> _onBackgroundMessageReceived(Map<String, dynamic> message) async {
+  print('onBackgrounMessage: $message');
+}
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  await Firebase.initializeApp(
-    options: DefaultFirebaseOptions.currentPlatform,
-  );
+  // await Firebase.initializeApp(
+  //   options: DefaultFirebaseOptions.currentPlatform,
+  // );
   // await FirebaseMessaging.instance.requestPermission();
-  FlutterAzureNotificationHub.instance.start();
+// FirebaseMessaging.onMessage
+  AzureNotificationHub.instance.registerBackgroundMessageHandler(_onBackgroundMessageReceived);
+  await AzureNotificationHub.instance.start();
 
   runApp(const MyApp());
 }
@@ -24,9 +53,33 @@ class MyApp extends StatefulWidget {
 }
 
 class _MyAppState extends State<MyApp> {
+  final _tagController = TextEditingController();
+  late StreamSubscription<Map<String, Object?>> _messageSubscription;
+  late StreamSubscription<Map<String, Object?>> _messageOpenedAppSubscription;
+  late Future<List<String>> _tagsFuture;
+  bool _isSettingTemplateIn = false;
+  bool _isRemovingTemplateIn = false;
+
   @override
   void initState() {
     super.initState();
+    _messageSubscription = AzureNotificationHub.instance.onMessage.listen((message) {
+      print('onMessage: $message');
+    });
+    _messageOpenedAppSubscription = AzureNotificationHub.instance.onMessageOpenedApp.listen((message) {
+      print('Opened App: $message');
+    });
+
+    _tagsFuture = AzureNotificationHub.instance.getTags();
+  }
+
+  @override
+  void dispose() {
+    _messageSubscription.cancel();
+    _messageOpenedAppSubscription.cancel();
+    _tagController.dispose();
+
+    super.dispose();
   }
 
   @override
@@ -34,24 +87,116 @@ class _MyAppState extends State<MyApp> {
     return MaterialApp(
       home: Scaffold(
         appBar: AppBar(
-          title: const Text('Plugin example app'),
+          title: const Text('AZ Notification Hub'),
         ),
-        body: Column(
-          children: [
-            const Center(
-              child: Text('AZ Notification Hubs Plugin Example'),
-            ),
-            ElevatedButton(
-              onPressed: () async {
-                try {
-                  // await _flutterAzureNotificationHubPlugin.start();
-                } catch (e) {
-                  print(e);
-                }
-              },
-              child: const Text('Start'),
-            ),
-          ],
+        body: SingleChildScrollView(
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text("Tags", style: Theme.of(context).textTheme.headlineLarge),
+              Row(
+                children: [
+                  Expanded(
+                    child: TextField(
+                      decoration: const InputDecoration(labelText: 'New Tag'),
+                      controller: _tagController,
+                    ),
+                  ),
+                  ElevatedButton(
+                    onPressed: () async {
+                      try {
+                        await AzureNotificationHub.instance.addTags([_tagController.text]);
+                        setState(() {
+                          _tagsFuture = AzureNotificationHub.instance.getTags();
+                          _tagController.clear();
+                        });
+                      } catch (e) {
+                        print(e);
+                      }
+                    },
+                    child: const Text('Add'),
+                  ),
+                ],
+              ),
+              FutureBuilder(
+                future: _tagsFuture,
+                builder: (context, snapshot) {
+                  if (snapshot.connectionState == ConnectionState.waiting) {
+                    return const CircularProgressIndicator();
+                  }
+
+                  if (snapshot.hasError) {
+                    return Text('Error: ${snapshot.error}');
+                  }
+
+                  final tags = snapshot.data as List<String>;
+
+                  return ListView.separated(
+                    physics: const NeverScrollableScrollPhysics(),
+                    shrinkWrap: true,
+                    itemCount: tags.length,
+                    separatorBuilder: (context, index) => const Divider(),
+                    itemBuilder: (context, index) {
+                      return ListTile(
+                        title: Text(tags[index]),
+                        trailing: IconButton(
+                          icon: const Icon(Icons.delete),
+                          onPressed: () async {
+                            await AzureNotificationHub.instance.removeTags([tags[index]]);
+                            setState(() {
+                              _tagsFuture = AzureNotificationHub.instance.getTags();
+                            });
+                          },
+                        ),
+                      );
+                    },
+                  );
+                },
+              ),
+              Text("Template", style: Theme.of(context).textTheme.headlineLarge),
+              Row(
+                children: [
+                  ElevatedButton(
+                    onPressed: () async {
+                      try {
+                        setState(() {
+                          _isSettingTemplateIn = true;
+                        });
+                        await AzureNotificationHub.instance
+                            .setTemplate(json.encode(_platformTemplates[defaultTargetPlatform.name]));
+                      } catch (e) {
+                        print(e);
+                      } finally {
+                        setState(() {
+                          _isSettingTemplateIn = false;
+                        });
+                      }
+                    },
+                    child: _isSettingTemplateIn ? const CircularProgressIndicator() : const Text('Set Template'),
+                  ),
+                  const SizedBox(width: 16),
+                  ElevatedButton(
+                    onPressed: () async {
+                      try {
+                        setState(() {
+                          _isRemovingTemplateIn = true;
+                        });
+                        await AzureNotificationHub.instance.removeTemplate();
+                      } catch (e) {
+                        print(e);
+                      } finally {
+                        setState(() {
+                          _isRemovingTemplateIn = false;
+                        });
+                      }
+                    },
+                    child: _isRemovingTemplateIn ? const CircularProgressIndicator() : const Text('Remove Template'),
+                  ),
+                ],
+              ),
+            ],
+          ),
         ),
       ),
     );

@@ -1,6 +1,6 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
     <application
-        android:label="flutter_azure_notification_hub_example"
+        android:label="AZ NH"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">
         <activity

@@ -1,0 +1,185 @@
+package com.tangrainc.azure_notification_hub
+
+import android.app.Activity
+import android.app.Application
+import android.content.Context
+import android.content.Intent
+import android.content.pm.PackageManager
+import androidx.lifecycle.Observer
+import com.google.firebase.messaging.RemoteMessage
+import com.microsoft.windowsazure.messaging.notificationhubs.InstallationTemplate
+import com.microsoft.windowsazure.messaging.notificationhubs.NotificationHub
+import io.flutter.embedding.engine.plugins.FlutterPlugin
+import io.flutter.embedding.engine.plugins.activity.ActivityAware
+import io.flutter.embedding.engine.plugins.activity.ActivityPluginBinding
+import io.flutter.plugin.common.MethodCall
+import io.flutter.plugin.common.MethodChannel
+import io.flutter.plugin.common.MethodChannel.MethodCallHandler
+import io.flutter.plugin.common.MethodChannel.Result
+import io.flutter.plugin.common.PluginRegistry.NewIntentListener
+
+
+class AzureNotificationHubPlugin :
+    FlutterPlugin,
+    MethodCallHandler,
+    ActivityAware,
+    NewIntentListener {
+    companion object {
+        const val SHARED_PREFERENCES_KEY = "fanh_shared_prefs"
+        const val CALLBACK_DISPATCHER_HANDLE_KEY = "callback_dispatcher_handle"
+        const val CALLBACK_HANDLE_KEY = "callback_handle"
+        const val REMOTE_MESSAGE_BYTES_KEY = "remote_message_bytes"
+        const val DEFAULT_TEMPLATE_NAME = "FANH DEFAULT TEMPLATE"
+    }
+
+    private lateinit var channel: MethodChannel
+    private var application: Application? = null
+    private var mainActivity: Activity? = null
+    private val remoteMessageLiveData = AzRemoteMessageLiveData.getInstance()
+    private lateinit var remoteMessageObserver: Observer<RemoteMessage>
+
+    override fun onAttachedToEngine(flutterPluginBinding: FlutterPlugin.FlutterPluginBinding) {
+        channel = MethodChannel(
+            flutterPluginBinding.binaryMessenger,
+            "plugins.flutter.io/azure_notification_hub"
+        )
+        channel.setMethodCallHandler(this)
+        application = flutterPluginBinding.applicationContext as Application
+
+        remoteMessageObserver = Observer { message ->
+            channel.invokeMethod("AzNotificationHub.onMessage", message.toMap())
+        }
+
+        remoteMessageLiveData.observeForever(remoteMessageObserver)
+    }
+
+    override fun onDetachedFromEngine(binding: FlutterPlugin.FlutterPluginBinding) {
+        channel.setMethodCallHandler(null)
+        application = null
+        remoteMessageLiveData.removeObserver(remoteMessageObserver)
+    }
+
+    override fun onAttachedToActivity(binding: ActivityPluginBinding) {
+        mainActivity = binding.activity
+        binding.addOnNewIntentListener(this)
+
+        // This is for cases when the app is terminated and launched by clicking on a notification.
+        if (mainActivity!!.intent != null && mainActivity!!.intent.extras != null) {
+            if ((mainActivity!!.intent.flags and Intent.FLAG_ACTIVITY_LAUNCHED_FROM_HISTORY)
+                != Intent.FLAG_ACTIVITY_LAUNCHED_FROM_HISTORY
+            ) {
+                onNewIntent(mainActivity!!.intent)
+            }
+        }
+    }
+
+    override fun onDetachedFromActivityForConfigChanges() {
+        mainActivity = null
+    }
+
+    override fun onReattachedToActivityForConfigChanges(binding: ActivityPluginBinding) {
+        mainActivity = binding.activity
+        binding.addOnNewIntentListener(this)
+    }
+
+    override fun onDetachedFromActivity() {
+        mainActivity = null
+    }
+
+    override fun onNewIntent(intent: Intent): Boolean {
+        if (intent.extras == null) {
+            return false
+        }
+
+        try {
+            val remoteMessage = RemoteMessage(intent.extras!!)
+
+            channel.invokeMethod("AzNotificationHub.onMessageOpenedApp", remoteMessage.toMap())
+
+            mainActivity!!.intent = intent
+            return true
+        } catch (_: Exception) {
+            return false
+        }
+    }
+
+    override fun onMethodCall(call: MethodCall, result: Result) {
+        when (call.method) {
+            "AzNotificationHub.start" -> startHubConnection(result)
+            "AzNotificationHub.addTags" -> addTags(call.argument("tags"), result)
+            "AzNotificationHub.getTags" -> result.success(NotificationHub.getTags().toList())
+            "AzNotificationHub.removeTags" -> removeTags(call.argument("tags"), result)
+            "AzNotificationHub.setTemplate" -> setTemplate(call.argument("body")!!, result)
+            "AzNotificationHub.removeTemplate" -> removeTemplate(result)
+            "AzNotificationHub.startBackgroundIsolate" -> startBackgroundIsolate(
+                call.argument("pluginCallbackHandle"),
+                call.argument("userCallbackHandle"),
+                result
+            )
+
+            else -> result.notImplemented()
+        }
+    }
+
+    private fun startHubConnection(result: Result) {
+        if (application == null) {
+            return
+        }
+
+        val metaData = application!!.packageManager.getApplicationInfo(
+            application!!.packageName,
+            PackageManager.GET_META_DATA
+        ).metaData
+
+        NotificationHub.start(
+            application,
+            metaData.getString("NotificationHubName"),
+            metaData.getString("NotificationHubConnectionString")
+        )
+        NotificationHub.setListener(AzHubListener())
+
+        result.success(null)
+    }
+
+    private fun addTags(tags: Collection<String>?, result: Result) {
+        NotificationHub.addTags(tags)
+
+        result.success(null)
+    }
+
+    private fun removeTags(tags: Collection<String>?, result: Result) {
+        NotificationHub.removeTags(tags)
+
+        result.success(null)
+    }
+
+    private fun setTemplate(body: String, result: Result) {
+        val template = InstallationTemplate()
+        template.body = body
+
+        NotificationHub.setTemplate(DEFAULT_TEMPLATE_NAME, template)
+
+        result.success(null)
+    }
+
+    private fun removeTemplate(result: Result) {
+        NotificationHub.removeTemplate(DEFAULT_TEMPLATE_NAME)
+
+        result.success(null)
+    }
+
+    private fun startBackgroundIsolate(
+        pluginCallbackHandle: Long?,
+        userCallbackHandle: Long?,
+        result: Result
+    ) {
+        application!!
+            .getSharedPreferences(SHARED_PREFERENCES_KEY, Context.MODE_PRIVATE)
+            .edit()
+            .putLong(CALLBACK_DISPATCHER_HANDLE_KEY, pluginCallbackHandle!!)
+            .putLong(CALLBACK_HANDLE_KEY, userCallbackHandle!!)
+            .apply()
+
+        result.success(null)
+    }
+}

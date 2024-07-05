@@ -1,6 +1,6 @@
-# flutter_azure_notification_hub_example
+# azure_notification_hub_example
 
-Demonstrates how to use the flutter_azure_notification_hub plugin.
+Demonstrates how to use the azure_notification_hub plugin.
 
 ## Getting Started
 

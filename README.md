@@ -1,4 +1,4 @@
-# flutter_azure_notification_hub
+# azure_notification_hub
 
 A new Flutter plugin project.
 

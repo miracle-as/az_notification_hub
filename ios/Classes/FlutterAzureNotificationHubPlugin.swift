@@ -1,10 +1,10 @@
 import Flutter
 import UIKit
 
-public class FlutterAzureNotificationHubPlugin: NSObject, FlutterPlugin {
+public class AzureNotificationHubPlugin: NSObject, FlutterPlugin {
   public static func register(with registrar: FlutterPluginRegistrar) {
-    let channel = FlutterMethodChannel(name: "flutter_azure_notification_hub", binaryMessenger: registrar.messenger())
-    let instance = FlutterAzureNotificationHubPlugin()
+    let channel = FlutterMethodChannel(name: "azure_notification_hub", binaryMessenger: registrar.messenger())
+    let instance = AzureNotificationHubPlugin()
     registrar.addMethodCallDelegate(instance, channel: channel)
   }
 
