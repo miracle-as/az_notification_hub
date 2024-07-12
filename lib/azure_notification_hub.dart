@@ -21,7 +21,7 @@ class AzureNotificationHub {
     return await AzureNotificationHubPlatform.instance.start();
   }
 
-  Future<void> addTags(List<String> tags) {
+  Future<bool> addTags(List<String> tags) {
     return AzureNotificationHubPlatform.instance.addTags(tags);
   }
 
@@ -29,15 +29,15 @@ class AzureNotificationHub {
     return AzureNotificationHubPlatform.instance.getTags();
   }
 
-  Future<void> removeTags(List<String> tags) {
+  Future<bool> removeTags(List<String> tags) {
     return AzureNotificationHubPlatform.instance.removeTags(tags);
   }
 
-  Future<void> setTemplate(String body) {
+  Future<bool> setTemplate(String body) {
     return AzureNotificationHubPlatform.instance.setTemplate(body);
   }
 
-  Future<void> removeTemplate() {
+  Future<bool> removeTemplate() {
     return AzureNotificationHubPlatform.instance.removeTemplate();
   }
 }

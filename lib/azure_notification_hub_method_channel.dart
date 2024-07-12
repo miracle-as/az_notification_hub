@@ -44,6 +44,8 @@ void _messagingCallbackDispatcher() {
 class MethodChannelAzureNotificationHub extends AzureNotificationHubPlatform {
   static bool _bgHandlerInitialized = false;
 
+  BackgroundMessageHandler? _onBackgroundMessage;
+
   /// The method channel used to interact with the native platform.
   @visibleForTesting
   final methodChannel = const MethodChannel('plugins.flutter.io/azure_notification_hub');
@@ -57,6 +59,10 @@ class MethodChannelAzureNotificationHub extends AzureNotificationHubPlatform {
         case 'AzNotificationHub.onMessageOpenedApp':
           AzureNotificationHubPlatform.onMessageOpenedApp.add(Map<String, dynamic>.from(call.arguments));
           break;
+        case 'AzNotificationHub.onBackgroundMessage':
+          // iOS only! Android uses an isolate.
+          _onBackgroundMessage?.call(Map<String, dynamic>.from(call.arguments));
+          break;
         default:
           throw UnimplementedError('${call.method} has not been implemented');
       }
@@ -65,6 +71,8 @@ class MethodChannelAzureNotificationHub extends AzureNotificationHubPlatform {
 
   @override
   Future<void> registerBackgroundMessageHandler(BackgroundMessageHandler handler) async {
+    _onBackgroundMessage = handler;
+
     if (defaultTargetPlatform != TargetPlatform.android) {
       return;
     }
@@ -89,29 +97,32 @@ class MethodChannelAzureNotificationHub extends AzureNotificationHubPlatform {
   }
 
   @override
-  Future<void> addTags(List<String> tags) {
-    return methodChannel.invokeMethod<void>('AzNotificationHub.addTags', {'tags': tags});
+  Future<bool> addTags(List<String> tags) async {
+    final success = await methodChannel.invokeMethod<bool>('AzNotificationHub.addTags', {'tags': tags});
+    return success ?? false;
   }
 
   @override
   Future<List<String>> getTags() async {
     final tags = await methodChannel.invokeListMethod<String>('AzNotificationHub.getTags');
-
     return tags ?? [];
   }
 
   @override
-  Future<void> removeTags(List<String> tags) {
-    return methodChannel.invokeMethod<void>('AzNotificationHub.removeTags', {'tags': tags});
+  Future<bool> removeTags(List<String> tags) async {
+    final success = await methodChannel.invokeMethod<bool>('AzNotificationHub.removeTags', {'tags': tags});
+    return success ?? false;
   }
 
   @override
-  Future<void> setTemplate(String body) {
-    return methodChannel.invokeMethod<void>('AzNotificationHub.setTemplate', {'body': body});
+  Future<bool> setTemplate(String body) async {
+    final success = await methodChannel.invokeMethod<bool>('AzNotificationHub.setTemplate', {'body': body});
+    return success ?? false;
   }
 
   @override
-  Future<void> removeTemplate() {
-    return methodChannel.invokeMethod<void>('AzNotificationHub.removeTemplate');
+  Future<bool> removeTemplate() async {
+    final success = await methodChannel.invokeMethod<bool>('AzNotificationHub.removeTemplate');
+    return success ?? false;
   }
 }

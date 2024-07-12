@@ -15,18 +15,26 @@ final _platformTemplates = {
       'data': {
         'title': '\$(title)',
         'body': '\$(body)',
+        'extra': '\$(extra)',
       },
     },
   },
-  // 'ios': {
-  //   'aps': {
-  //     'alert': {
-  //       'title': 'title',
-  //       'body': 'body',
-  //     },
-  //   },
+  TargetPlatform.iOS.name: {
+    'aps': {
+      'alert': {
+        'title': '\$(title)',
+        'body': '\$(body)',
+        "sound": "default",
+        "content-available": 1,
+      },
+    },
+    'title': '\$(title)',
+    'body': '\$(body)',
+    'extra': '\$(extra)',
+  },
 };
 
+@pragma('vm:entry-point')
 Future<void> _onBackgroundMessageReceived(Map<String, dynamic> message) async {
   print('onBackgrounMessage: $message');
 }
@@ -34,11 +42,6 @@ Future<void> _onBackgroundMessageReceived(Map<String, dynamic> message) async {
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  // await Firebase.initializeApp(
-  //   options: DefaultFirebaseOptions.currentPlatform,
-  // );
-  // await FirebaseMessaging.instance.requestPermission();
-// FirebaseMessaging.onMessage
   AzureNotificationHub.instance.registerBackgroundMessageHandler(_onBackgroundMessageReceived);
   await AzureNotificationHub.instance.start();
 

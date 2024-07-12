@@ -142,15 +142,13 @@ class AzureNotificationHubPlugin :
     }
 
     private fun addTags(tags: Collection<String>?, result: Result) {
-        NotificationHub.addTags(tags)
-
-        result.success(null)
+        val success = NotificationHub.addTags(tags)
+        result.success(success)
     }
 
     private fun removeTags(tags: Collection<String>?, result: Result) {
-        NotificationHub.removeTags(tags)
-
-        result.success(null)
+        val success = NotificationHub.removeTags(tags)
+        result.success(success)
     }
 
     private fun setTemplate(body: String, result: Result) {
@@ -159,13 +157,12 @@ class AzureNotificationHubPlugin :
 
         NotificationHub.setTemplate(DEFAULT_TEMPLATE_NAME, template)
 
-        result.success(null)
+        result.success(true)
     }
 
     private fun removeTemplate(result: Result) {
-        NotificationHub.removeTemplate(DEFAULT_TEMPLATE_NAME)
-
-        result.success(null)
+        val success = NotificationHub.removeTemplate(DEFAULT_TEMPLATE_NAME)
+        result.success(success)
     }
 
     private fun startBackgroundIsolate(

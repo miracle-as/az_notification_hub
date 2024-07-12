@@ -40,7 +40,7 @@ abstract class AzureNotificationHubPlatform extends PlatformInterface {
     throw UnimplementedError('start() has not been implemented.');
   }
 
-  Future<void> addTags(List<String> tags) {
+  Future<bool> addTags(List<String> tags) {
     throw UnimplementedError('addTags() has not been implemented.');
   }
 
@@ -48,15 +48,15 @@ abstract class AzureNotificationHubPlatform extends PlatformInterface {
     throw UnimplementedError('getTags() has not been implemented.');
   }
 
-  Future<void> removeTags(List<String> tags) {
+  Future<bool> removeTags(List<String> tags) {
     throw UnimplementedError('removeTags() has not been implemented.');
   }
 
-  Future<void> setTemplate(String body) {
+  Future<bool> setTemplate(String body) {
     throw UnimplementedError('setTemplate() has not been implemented.');
   }
 
-  Future<void> removeTemplate() {
+  Future<bool> removeTemplate() {
     throw UnimplementedError('removeTemplate() has not been implemented.');
   }
 }
