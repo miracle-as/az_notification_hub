@@ -109,6 +109,7 @@ class AzureNotificationHubPlugin :
             "AzNotificationHub.addTags" -> addTags(call.argument("tags"), result)
             "AzNotificationHub.getTags" -> result.success(NotificationHub.getTags().toList())
             "AzNotificationHub.removeTags" -> removeTags(call.argument("tags"), result)
+            "AzNotificationHub.clearTags" -> clearTags(result)
             "AzNotificationHub.setTemplate" -> setTemplate(call.argument("body")!!, result)
             "AzNotificationHub.removeTemplate" -> removeTemplate(result)
             "AzNotificationHub.startBackgroundIsolate" -> startBackgroundIsolate(
@@ -149,6 +150,12 @@ class AzureNotificationHubPlugin :
     private fun removeTags(tags: Collection<String>?, result: Result) {
         val success = NotificationHub.removeTags(tags)
         result.success(success)
+    }
+
+    private fun clearTags(result: Result) {
+        NotificationHub.clearTags()
+
+        result.success(null)
     }
 
     private fun setTemplate(body: String, result: Result) {

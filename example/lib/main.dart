@@ -120,6 +120,21 @@ class _MyAppState extends State<MyApp> {
                     },
                     child: const Text('Add'),
                   ),
+                  const SizedBox(width: 8),
+                  ElevatedButton(
+                    onPressed: () async {
+                      try {
+                        await AzureNotificationHub.instance.clearTags();
+                        setState(() {
+                          _tagsFuture = AzureNotificationHub.instance.getTags();
+                          _tagController.clear();
+                        });
+                      } catch (e) {
+                        print(e);
+                      }
+                    },
+                    child: const Text('Clear Tags'),
+                  ),
                 ],
               ),
               FutureBuilder(
@@ -157,6 +172,7 @@ class _MyAppState extends State<MyApp> {
                   );
                 },
               ),
+              const SizedBox(height: 16),
               Text("Template", style: Theme.of(context).textTheme.headlineLarge),
               Row(
                 children: [

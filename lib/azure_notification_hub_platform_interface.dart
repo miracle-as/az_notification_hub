@@ -52,6 +52,10 @@ abstract class AzureNotificationHubPlatform extends PlatformInterface {
     throw UnimplementedError('removeTags() has not been implemented.');
   }
 
+  Future<void> clearTags() {
+    throw UnimplementedError('clearTags() has not been implemented.');
+  }
+
   Future<bool> setTemplate(String body) {
     throw UnimplementedError('setTemplate() has not been implemented.');
   }

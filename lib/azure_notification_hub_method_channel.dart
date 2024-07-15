@@ -115,6 +115,11 @@ class MethodChannelAzureNotificationHub extends AzureNotificationHubPlatform {
   }
 
   @override
+  Future<void> clearTags() {
+    return methodChannel.invokeMethod<bool>('AzNotificationHub.clearTags');
+  }
+
+  @override
   Future<bool> setTemplate(String body) async {
     final success = await methodChannel.invokeMethod<bool>('AzNotificationHub.setTemplate', {'body': body});
     return success ?? false;

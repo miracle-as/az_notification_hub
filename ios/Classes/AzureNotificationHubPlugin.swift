@@ -26,6 +26,8 @@ public class AzureNotificationHubPlugin: NSObject, FlutterPlugin, MSNotification
             addTags((call.arguments as! [String:Any?])["tags"] as! [String], result: result)
         case "AzNotificationHub.removeTags":
             removeTags((call.arguments as! [String:Any?])["tags"] as! [String], result: result)
+        case "AzNotificationHub.clearTags":
+            clearTags(result: result)
         case "AzNotificationHub.getTags":
             getTags(result: result)
         case "AzNotificationHub.setTemplate":
@@ -94,6 +96,12 @@ public class AzureNotificationHubPlugin: NSObject, FlutterPlugin, MSNotification
     private func getTags(result: @escaping FlutterResult) {
         let tags = MSNotificationHub.getTags()
         result(tags)
+    }
+    
+    private func clearTags(result: @escaping FlutterResult) {
+        MSNotificationHub.clearTags()
+        
+        result(nil)
     }
     
     private func setTemplate(body: String, result: @escaping FlutterResult) {

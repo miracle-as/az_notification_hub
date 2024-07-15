@@ -33,6 +33,10 @@ class AzureNotificationHub {
     return AzureNotificationHubPlatform.instance.removeTags(tags);
   }
 
+  Future<void> clearTags() {
+    return AzureNotificationHubPlatform.instance.clearTags();
+  }
+
   Future<bool> setTemplate(String body) {
     return AzureNotificationHubPlatform.instance.setTemplate(body);
   }
