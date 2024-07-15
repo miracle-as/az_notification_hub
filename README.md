@@ -2,7 +2,7 @@
 
 A Flutter plugin to use Azure Notification Hubs
 
-![Pub Version](https://img.shields.io/pub/v/azure_notification_hub)
+![Pub Version](https://img.shields.io/pub/v/az_notification_hub)
 
 Microsoft Azure Notification Hubs is a scalable push notification engine for quickly sending millions of messages to any mobile platform. You can visit the [developer center](https://learn.microsoft.com/en-us/azure/notification-hubs/) to learn more.
 
@@ -190,7 +190,7 @@ To easily receive cross platform notifications without worrying in your backend 
 
 ```dart
 import 'package:flutter/foundation.dart';
-import 'package:azure_notification_hub/azure_notification_hub.dart';
+import 'package:az_notification_hub/az_notification_hub.dart';
 
 final _platformTemplates = {
   TargetPlatform.android.name: {

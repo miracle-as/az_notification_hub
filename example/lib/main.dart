@@ -5,7 +5,7 @@ import 'dart:convert';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:azure_notification_hub/azure_notification_hub.dart';
+import 'package:az_notification_hub/az_notification_hub.dart';
 
 final _platformTemplates = {
   TargetPlatform.android.name: {

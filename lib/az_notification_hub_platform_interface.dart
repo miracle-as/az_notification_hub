@@ -2,7 +2,7 @@ import 'dart:async';
 
 import 'package:plugin_platform_interface/plugin_platform_interface.dart';
 
-import 'azure_notification_hub_method_channel.dart';
+import 'az_notification_hub_method_channel.dart';
 
 typedef BackgroundMessageHandler = Future<void> Function(Map<String, dynamic> message);
 

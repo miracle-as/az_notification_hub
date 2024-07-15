@@ -4,7 +4,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 
-import 'azure_notification_hub_platform_interface.dart';
+import 'az_notification_hub_platform_interface.dart';
 
 @pragma('vm:entry-point')
 void _messagingCallbackDispatcher() {

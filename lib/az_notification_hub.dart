@@ -1,6 +1,6 @@
 import 'package:permission_handler/permission_handler.dart';
 
-import 'azure_notification_hub_platform_interface.dart';
+import 'az_notification_hub_platform_interface.dart';
 
 class AzureNotificationHub {
   static final _instance = AzureNotificationHub();

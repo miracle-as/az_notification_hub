@@ -1,7 +1,7 @@
-name: azure_notification_hub
-description: "A Flutter to work with Azure Notification Hubs."
+name: az_notification_hub
+description: "A Flutter plugin to work with Azure Notification Hubs."
 version: 1.0.0
-homepage: https://github.com/PeterStaev/azure_notification_hub.git
+homepage: https://github.com/PeterStaev/az_notification_hub.git
 
 environment:
   sdk: ">=3.4.3 <4.0.0"
