@@ -24,9 +24,9 @@ final _platformTemplates = {
       'alert': {
         'title': '\$(title)',
         'body': '\$(body)',
-        "sound": "default",
-        "content-available": 1,
       },
+      "sound": "default",
+      "content-available": 1,
     },
     'title': '\$(title)',
     'body': '\$(body)',

@@ -5,11 +5,11 @@ import 'azure_notification_hub_platform_interface.dart';
 class AzureNotificationHub {
   static final _instance = AzureNotificationHub();
 
-  static get instance => _instance;
+  static AzureNotificationHub get instance => _instance;
 
-  get onMessage => AzureNotificationHubPlatform.onMessage.stream;
+  Stream<Map<String, dynamic>> get onMessage => AzureNotificationHubPlatform.onMessage.stream;
 
-  get onMessageOpenedApp => AzureNotificationHubPlatform.onMessageOpenedApp.stream;
+  Stream<Map<String, dynamic>> get onMessageOpenedApp => AzureNotificationHubPlatform.onMessageOpenedApp.stream;
 
   Future<void> registerBackgroundMessageHandler(BackgroundMessageHandler handler) {
     return AzureNotificationHubPlatform.instance.registerBackgroundMessageHandler(handler);
