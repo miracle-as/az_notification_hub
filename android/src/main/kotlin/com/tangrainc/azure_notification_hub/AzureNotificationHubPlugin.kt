@@ -37,6 +37,7 @@ class AzureNotificationHubPlugin :
     private var mainActivity: Activity? = null
     private val remoteMessageLiveData = AzRemoteMessageLiveData.getInstance()
     private lateinit var remoteMessageObserver: Observer<RemoteMessage>
+    private var initialMessage: RemoteMessage? = null;
 
     override fun onAttachedToEngine(flutterPluginBinding: FlutterPlugin.FlutterPluginBinding) {
         channel = MethodChannel(
@@ -68,7 +69,11 @@ class AzureNotificationHubPlugin :
             if ((mainActivity!!.intent.flags and Intent.FLAG_ACTIVITY_LAUNCHED_FROM_HISTORY)
                 != Intent.FLAG_ACTIVITY_LAUNCHED_FROM_HISTORY
             ) {
-                onNewIntent(mainActivity!!.intent)
+                try {
+                    initialMessage = RemoteMessage(mainActivity!!.intent.extras!!)
+                } catch (_: Exception) {
+                    // DO NOTHING
+                }
             }
         }
     }
@@ -117,6 +122,7 @@ class AzureNotificationHubPlugin :
                 call.argument("userCallbackHandle"),
                 result
             )
+            "AzNotificationHub.getInitialMessage" -> getInitialMessage(result)
 
             else -> result.notImplemented()
         }
@@ -185,5 +191,10 @@ class AzureNotificationHubPlugin :
             .apply()
 
         result.success(null)
+    }
+
+    private fun getInitialMessage(result: Result) {
+        result.success(initialMessage?.toMap())
+        initialMessage = null
     }
 }

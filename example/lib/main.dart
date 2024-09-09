@@ -43,8 +43,9 @@ Future<void> _onBackgroundMessageReceived(Map<String, dynamic> message) async {
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-
-  AzureNotificationHub.instance.registerBackgroundMessageHandler(_onBackgroundMessageReceived);
+  print('main');
+  AzureNotificationHub.instance
+      .registerBackgroundMessageHandler(_onBackgroundMessageReceived);
   await AzureNotificationHub.instance.start();
 
   runApp(const MyApp());
@@ -68,10 +69,12 @@ class _MyAppState extends State<MyApp> {
   @override
   void initState() {
     super.initState();
-    _messageSubscription = AzureNotificationHub.instance.onMessage.listen((message) {
+    _messageSubscription =
+        AzureNotificationHub.instance.onMessage.listen((message) {
       print('onMessage: $message');
     });
-    _messageOpenedAppSubscription = AzureNotificationHub.instance.onMessageOpenedApp.listen((message) {
+    _messageOpenedAppSubscription =
+        AzureNotificationHub.instance.onMessageOpenedApp.listen((message) {
       print('Opened App: $message');
     });
 
@@ -111,7 +114,8 @@ class _MyAppState extends State<MyApp> {
                   ElevatedButton(
                     onPressed: () async {
                       try {
-                        await AzureNotificationHub.instance.addTags([_tagController.text]);
+                        await AzureNotificationHub.instance
+                            .addTags([_tagController.text]);
                         setState(() {
                           _tagsFuture = AzureNotificationHub.instance.getTags();
                           _tagController.clear();
@@ -163,9 +167,11 @@ class _MyAppState extends State<MyApp> {
                         trailing: IconButton(
                           icon: const Icon(Icons.delete),
                           onPressed: () async {
-                            await AzureNotificationHub.instance.removeTags([tags[index]]);
+                            await AzureNotificationHub.instance
+                                .removeTags([tags[index]]);
                             setState(() {
-                              _tagsFuture = AzureNotificationHub.instance.getTags();
+                              _tagsFuture =
+                                  AzureNotificationHub.instance.getTags();
                             });
                           },
                         ),
@@ -175,7 +181,8 @@ class _MyAppState extends State<MyApp> {
                 },
               ),
               const SizedBox(height: 16),
-              Text("Template", style: Theme.of(context).textTheme.headlineLarge),
+              Text("Template",
+                  style: Theme.of(context).textTheme.headlineLarge),
               Row(
                 children: [
                   ElevatedButton(
@@ -184,8 +191,9 @@ class _MyAppState extends State<MyApp> {
                         setState(() {
                           _isSettingTemplateIn = true;
                         });
-                        await AzureNotificationHub.instance
-                            .setTemplate(json.encode(_platformTemplates[defaultTargetPlatform.name]));
+                        await AzureNotificationHub.instance.setTemplate(
+                            json.encode(_platformTemplates[
+                                defaultTargetPlatform.name]));
                       } catch (e) {
                         print(e);
                       } finally {
@@ -194,7 +202,9 @@ class _MyAppState extends State<MyApp> {
                         });
                       }
                     },
-                    child: _isSettingTemplateIn ? const CircularProgressIndicator() : const Text('Set Template'),
+                    child: _isSettingTemplateIn
+                        ? const CircularProgressIndicator()
+                        : const Text('Set Template'),
                   ),
                   const SizedBox(width: 16),
                   ElevatedButton(
@@ -212,7 +222,9 @@ class _MyAppState extends State<MyApp> {
                         });
                       }
                     },
-                    child: _isRemovingTemplateIn ? const CircularProgressIndicator() : const Text('Remove Template'),
+                    child: _isRemovingTemplateIn
+                        ? const CircularProgressIndicator()
+                        : const Text('Remove Template'),
                   ),
                 ],
               ),

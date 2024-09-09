@@ -11,16 +11,19 @@ void _messagingCallbackDispatcher() {
   // Initialize state necessary for MethodChannels.
   WidgetsFlutterBinding.ensureInitialized();
 
-  const MethodChannel bgChannel = MethodChannel('plugins.flutter.io/azure_notification_hub_background');
+  const MethodChannel bgChannel =
+      MethodChannel('plugins.flutter.io/azure_notification_hub_background');
 
   // This is where we handle background events from the native portion of the plugin.
   bgChannel.setMethodCallHandler((MethodCall call) async {
     if (call.method == 'AzRemoteMessageBackgroundWorker.onMessage') {
-      final CallbackHandle handle = CallbackHandle.fromRawHandle(call.arguments['userCallbackHandle']);
+      final CallbackHandle handle =
+          CallbackHandle.fromRawHandle(call.arguments['userCallbackHandle']);
 
       // PluginUtilities.getCallbackFromHandle performs a lookup based on the
       // callback handle and returns a tear-off of the original callback.
-      final closure = PluginUtilities.getCallbackFromHandle(handle)! as BackgroundMessageHandler;
+      final closure = PluginUtilities.getCallbackFromHandle(handle)!
+          as BackgroundMessageHandler;
 
       try {
         await closure(Map<String, dynamic>.from(call.arguments['message']));
@@ -48,16 +51,20 @@ class MethodChannelAzureNotificationHub extends AzureNotificationHubPlatform {
 
   /// The method channel used to interact with the native platform.
   @visibleForTesting
-  final methodChannel = const MethodChannel('plugins.flutter.io/azure_notification_hub');
+  final methodChannel =
+      const MethodChannel('plugins.flutter.io/azure_notification_hub');
 
+  /// Creates an instance of [AzureNotificationHubPlatform] that uses method channels.
   MethodChannelAzureNotificationHub() {
     methodChannel.setMethodCallHandler((MethodCall call) async {
       switch (call.method) {
         case 'AzNotificationHub.onMessage':
-          AzureNotificationHubPlatform.onMessage.add(Map<String, dynamic>.from(call.arguments));
+          AzureNotificationHubPlatform.onMessage
+              .add(Map<String, dynamic>.from(call.arguments));
           break;
         case 'AzNotificationHub.onMessageOpenedApp':
-          AzureNotificationHubPlatform.onMessageOpenedApp.add(Map<String, dynamic>.from(call.arguments));
+          AzureNotificationHubPlatform.onMessageOpenedApp
+              .add(Map<String, dynamic>.from(call.arguments));
           break;
         case 'AzNotificationHub.onBackgroundMessage':
           // iOS only! Android uses an isolate.
@@ -70,7 +77,8 @@ class MethodChannelAzureNotificationHub extends AzureNotificationHubPlatform {
   }
 
   @override
-  Future<void> registerBackgroundMessageHandler(BackgroundMessageHandler handler) async {
+  Future<void> registerBackgroundMessageHandler(
+      BackgroundMessageHandler handler) async {
     _onBackgroundMessage = handler;
 
     if (defaultTargetPlatform != TargetPlatform.android) {
@@ -79,8 +87,10 @@ class MethodChannelAzureNotificationHub extends AzureNotificationHubPlatform {
 
     if (!_bgHandlerInitialized) {
       _bgHandlerInitialized = true;
-      final CallbackHandle bgHandle = PluginUtilities.getCallbackHandle(_messagingCallbackDispatcher)!;
-      final CallbackHandle userHandle = PluginUtilities.getCallbackHandle(handler)!;
+      final CallbackHandle bgHandle =
+          PluginUtilities.getCallbackHandle(_messagingCallbackDispatcher)!;
+      final CallbackHandle userHandle =
+          PluginUtilities.getCallbackHandle(handler)!;
       await methodChannel.invokeMethod(
         'AzNotificationHub.startBackgroundIsolate',
         {
@@ -98,19 +108,22 @@ class MethodChannelAzureNotificationHub extends AzureNotificationHubPlatform {
 
   @override
   Future<bool> addTags(List<String> tags) async {
-    final success = await methodChannel.invokeMethod<bool>('AzNotificationHub.addTags', {'tags': tags});
+    final success = await methodChannel
+        .invokeMethod<bool>('AzNotificationHub.addTags', {'tags': tags});
     return success ?? false;
   }
 
   @override
   Future<List<String>> getTags() async {
-    final tags = await methodChannel.invokeListMethod<String>('AzNotificationHub.getTags');
+    final tags = await methodChannel
+        .invokeListMethod<String>('AzNotificationHub.getTags');
     return tags ?? [];
   }
 
   @override
   Future<bool> removeTags(List<String> tags) async {
-    final success = await methodChannel.invokeMethod<bool>('AzNotificationHub.removeTags', {'tags': tags});
+    final success = await methodChannel
+        .invokeMethod<bool>('AzNotificationHub.removeTags', {'tags': tags});
     return success ?? false;
   }
 
@@ -121,13 +134,26 @@ class MethodChannelAzureNotificationHub extends AzureNotificationHubPlatform {
 
   @override
   Future<bool> setTemplate(String body) async {
-    final success = await methodChannel.invokeMethod<bool>('AzNotificationHub.setTemplate', {'body': body});
+    final success = await methodChannel
+        .invokeMethod<bool>('AzNotificationHub.setTemplate', {'body': body});
     return success ?? false;
   }
 
   @override
   Future<bool> removeTemplate() async {
-    final success = await methodChannel.invokeMethod<bool>('AzNotificationHub.removeTemplate');
+    final success = await methodChannel
+        .invokeMethod<bool>('AzNotificationHub.removeTemplate');
     return success ?? false;
+  }
+
+  @override
+  Future<Map<String, dynamic>?> getInitialMessage() async {
+    if (defaultTargetPlatform != TargetPlatform.android) {
+      return Future.value(null);
+    }
+
+    final result =
+        await methodChannel.invokeMethod('AzNotificationHub.getInitialMessage');
+    return result == null ? result : Map<String, dynamic>.from(result);
   }
 }
