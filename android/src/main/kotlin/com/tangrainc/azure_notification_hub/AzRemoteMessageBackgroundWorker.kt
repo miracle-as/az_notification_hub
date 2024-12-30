@@ -1,12 +1,13 @@
 package com.tangrainc.azure_notification_hub
 
 import android.content.Context
+import android.os.Build
 import android.os.Handler
 import android.os.Looper
 import android.os.Parcel
 import android.util.Log
 import androidx.work.Data
-import androidx.work.OneTimeWorkRequest
+import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.OutOfQuotaPolicy
 import androidx.work.WorkManager
 import androidx.work.Worker
@@ -41,10 +42,12 @@ class AzRemoteMessageBackgroundWorker(private val context: Context, params: Work
                 )
                 .build()
 
-            val request = OneTimeWorkRequest.Builder(AzRemoteMessageBackgroundWorker::class.java)
-                .setExpedited(OutOfQuotaPolicy.RUN_AS_NON_EXPEDITED_WORK_REQUEST)
-                .setInputData(data)
-                .build()
+            val request = OneTimeWorkRequestBuilder<AzRemoteMessageBackgroundWorker>()
+                .apply {
+                    setInputData(data)
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S)
+                        setExpedited(OutOfQuotaPolicy.RUN_AS_NON_EXPEDITED_WORK_REQUEST)
+                }.build()
 
             WorkManager.getInstance(context).enqueue(request)
         }

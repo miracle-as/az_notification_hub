@@ -1,3 +1,7 @@
+## 1.1.2
+
+- Fix background message callback not getting fired on Android 11 or lower
+
 ## 1.1.1
 
 - Fix podspec naming
