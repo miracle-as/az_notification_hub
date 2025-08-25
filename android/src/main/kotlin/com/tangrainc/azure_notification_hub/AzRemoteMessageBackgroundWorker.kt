@@ -24,6 +24,7 @@ import java.util.concurrent.atomic.AtomicBoolean
 import kotlin.io.path.Path
 import kotlin.io.path.createTempFile
 import kotlin.io.path.deleteExisting
+import kotlin.io.path.exists
 import kotlin.io.path.pathString
 import kotlin.io.path.readBytes
 import kotlin.io.path.writeBytes
@@ -139,6 +140,11 @@ class AzRemoteMessageBackgroundWorker(private val context: Context, params: Work
             inputData.getString(AzureNotificationHubPlugin.REMOTE_MESSAGE_FILE_KEY)
         if (messageFile != null) {
             val messageFilePath = Path(messageFile)
+            if (!messageFilePath.exists()) {
+                Log.e(TAG, "Remote message file $messageFile does not exist")
+                return Result.failure()
+            }
+
             val messageBytes = messageFilePath.readBytes()
             messageFilePath.deleteExisting()
 
