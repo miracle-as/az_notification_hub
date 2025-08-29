@@ -38,15 +38,18 @@ class AzRemoteMessageBackgroundWorker(private val context: Context, params: Work
         private var backgroundChannel: MethodChannel? = null
 
         fun enqueueWork(context: Context, remoteMessage: RemoteMessage) {
+            val tempFile: String
             val parcel = Parcel.obtain()
-            remoteMessage.writeToParcel(parcel, 0)
-            
-            val tempFile = createTempFile(prefix = "notification", suffix = ".json").let {
-                it.writeBytes(parcel.marshall())
-                it.pathString
-            }
+            try {
+                remoteMessage.writeToParcel(parcel, 0)
 
-            parcel.recycle()
+                tempFile = createTempFile(prefix = "notification", suffix = ".json").let {
+                    it.writeBytes(parcel.marshall())
+                    it.pathString
+                }
+            } finally {
+                parcel.recycle()
+            }
 
             val data = Data.Builder()
                 .putString(
