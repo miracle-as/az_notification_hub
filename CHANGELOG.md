@@ -1,3 +1,7 @@
+## 1.1.3
+
+- Fix serialization limit error for Android
+
 ## 1.1.2
 
 - Fix background message callback not getting fired on Android 11 or lower
