@@ -9,19 +9,25 @@ import android.util.Log
 import androidx.work.Data
 import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.OutOfQuotaPolicy
-import androidx.work.WorkManager
 import androidx.work.Worker
 import androidx.work.WorkerParameters
+import androidx.work.WorkManager
 import com.google.firebase.messaging.RemoteMessage
-import io.flutter.FlutterInjector
-import io.flutter.embedding.engine.FlutterEngine
 import io.flutter.embedding.engine.dart.DartExecutor.DartCallback
+import io.flutter.embedding.engine.FlutterEngine
+import io.flutter.FlutterInjector
 import io.flutter.plugin.common.MethodCall
 import io.flutter.plugin.common.MethodChannel
 import io.flutter.plugin.common.MethodChannel.MethodCallHandler
 import io.flutter.view.FlutterCallbackInformation
 import java.util.concurrent.atomic.AtomicBoolean
-
+import kotlin.io.path.Path
+import kotlin.io.path.createTempFile
+import kotlin.io.path.deleteExisting
+import kotlin.io.path.exists
+import kotlin.io.path.pathString
+import kotlin.io.path.readBytes
+import kotlin.io.path.writeBytes
 
 class AzRemoteMessageBackgroundWorker(private val context: Context, params: WorkerParameters) :
     Worker(context, params), MethodCallHandler {
@@ -32,13 +38,23 @@ class AzRemoteMessageBackgroundWorker(private val context: Context, params: Work
         private var backgroundChannel: MethodChannel? = null
 
         fun enqueueWork(context: Context, remoteMessage: RemoteMessage) {
+            val tempFile: String
             val parcel = Parcel.obtain()
-            remoteMessage.writeToParcel(parcel, 0)
+            try {
+                remoteMessage.writeToParcel(parcel, 0)
+
+                tempFile = createTempFile(prefix = "notification", suffix = ".json").let {
+                    it.writeBytes(parcel.marshall())
+                    it.pathString
+                }
+            } finally {
+                parcel.recycle()
+            }
 
             val data = Data.Builder()
-                .putByteArray(
-                    AzureNotificationHubPlugin.REMOTE_MESSAGE_BYTES_KEY,
-                    parcel.marshall()
+                .putString(
+                    AzureNotificationHubPlugin.REMOTE_MESSAGE_FILE_KEY,
+                    tempFile
                 )
                 .build()
 
@@ -123,9 +139,18 @@ class AzRemoteMessageBackgroundWorker(private val context: Context, params: Work
                 Context.MODE_PRIVATE
             )
             .getLong(AzureNotificationHubPlugin.CALLBACK_HANDLE_KEY, 0)
-        val messageBytes =
-            inputData.getByteArray(AzureNotificationHubPlugin.REMOTE_MESSAGE_BYTES_KEY)
-        if (messageBytes != null) {
+        val messageFile =
+            inputData.getString(AzureNotificationHubPlugin.REMOTE_MESSAGE_FILE_KEY)
+        if (messageFile != null) {
+            val messageFilePath = Path(messageFile)
+            if (!messageFilePath.exists()) {
+                Log.e(TAG, "Remote message file $messageFile does not exist")
+                return Result.failure()
+            }
+
+            val messageBytes = messageFilePath.readBytes()
+            messageFilePath.deleteExisting()
+
             val parcel = Parcel.obtain()
             try {
                 parcel.unmarshall(messageBytes, 0, messageBytes.size)

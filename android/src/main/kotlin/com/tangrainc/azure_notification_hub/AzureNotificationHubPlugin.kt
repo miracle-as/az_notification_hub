@@ -28,7 +28,7 @@ class AzureNotificationHubPlugin :
         const val SHARED_PREFERENCES_KEY = "fanh_shared_prefs"
         const val CALLBACK_DISPATCHER_HANDLE_KEY = "callback_dispatcher_handle"
         const val CALLBACK_HANDLE_KEY = "callback_handle"
-        const val REMOTE_MESSAGE_BYTES_KEY = "remote_message_bytes"
+        const val REMOTE_MESSAGE_FILE_KEY = "remote_message_file"
         const val DEFAULT_TEMPLATE_NAME = "FANH DEFAULT TEMPLATE"
     }
 
